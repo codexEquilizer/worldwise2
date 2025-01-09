@@ -11,17 +11,29 @@ import {
 import { useEffect, useState } from "react";
 import { useCities } from "../context/CitiesContext";
 import { convertToEmoji } from "../common-service/convertToEmoji";
+import { useGeolocation } from "../hooks/useGeolocation";
+import Button from "./Button";
 
 function Map() {
   const { cities } = useCities();
-
-  // eslint-disable-next-line no-unused-vars
   const [searchParams] = useSearchParams({ lat: 40, lng: 0 });
   const mapLat = searchParams.get("lat");
   const mapLng = searchParams.get("lng");
-
-  // eslint-disable-next-line no-unused-vars
   const [mapPosition, setMapPosition] = useState([mapLat ?? 40, mapLng ?? 0]);
+
+  const {
+    isLoading: isLoadingPosition,
+    position: geoLocationPosition,
+    getPosition,
+  } = useGeolocation();
+
+  useEffect(
+    function () {
+      if (geoLocationPosition)
+        setMapPosition([geoLocationPosition.lat, geoLocationPosition.lng]);
+    },
+    [geoLocationPosition]
+  );
 
   useEffect(
     function () {
@@ -34,6 +46,11 @@ function Map() {
 
   return (
     <div className={styles.mapContainer}>
+      {!geoLocationPosition && (
+        <Button type="position" onClick={getPosition}>
+          {isLoadingPosition ? "Loading..." : "Get your location"}
+        </Button>
+      )}
       <MapContainer
         center={mapPosition}
         // center={[mapLat, mapLng]}
