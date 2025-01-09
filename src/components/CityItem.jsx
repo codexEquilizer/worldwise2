@@ -1,7 +1,7 @@
 import styles from "./CityItem.module.css";
 import { convertToEmoji } from "../common-service/convertToEmoji";
 import { Link } from "react-router-dom";
-import { useCities } from "../context/CitiesContext";
+import { useCities } from "../Context/CitiesContext";
 
 function CityItem({ city }) {
   const { cityName, emoji, date, id, position } = city;

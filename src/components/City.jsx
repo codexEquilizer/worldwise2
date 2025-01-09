@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import styles from "./City.module.css";
-import { useCities } from "../context/CitiesContext";
+import { useCities } from "../Context/CitiesContext";
 import { useEffect } from "react";
 import { convertToEmoji } from "../common-service/convertToEmoji";
 import Spinner from "./Spinner";
