@@ -1,30 +1,96 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import styles from "./Map.module.css";
+import {
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  useMap,
+  useMapEvents,
+} from "react-leaflet";
+import { useEffect, useState } from "react";
+import { useCities } from "../Context/CitiesContext";
+import { convertToEmoji } from "../common-service/convertToEmoji";
+import { useGeolocation } from "../hooks/useGeolocation";
+import Button from "./Button";
+import { useUrlPosition } from "../hooks/useUrlPosition";
 
 function Map() {
-  // eslint-disable-next-line no-unused-vars
-  const [searchParams, setSearchParams] = useSearchParams();
-  const lat = searchParams.get("lat");
-  const lng = searchParams.get("lng");
+  const { cities } = useCities();
+  const [mapLat, mapLng] = useUrlPosition();
+  const [mapPosition, setMapPosition] = useState([mapLat ?? 40, mapLng ?? 0]);
 
-  const navigate = useNavigate(); // This is programmatic navigation
+  const {
+    isLoading: isLoadingPosition,
+    position: geoLocationPosition,
+    getPosition,
+  } = useGeolocation();
+
+  useEffect(
+    function () {
+      if (geoLocationPosition)
+        setMapPosition([geoLocationPosition.lat, geoLocationPosition.lng]);
+    },
+    [geoLocationPosition]
+  );
+
+  useEffect(
+    function () {
+      if (mapLat && mapLng) {
+        setMapPosition([mapLat, mapLng]);
+      }
+    },
+    [mapLat, mapLng]
+  );
 
   return (
-    <div
-      className={styles.mapContainer}
-      onClick={() => {
-        navigate("form");
-      }}
-    >
-      <h1>Map</h1>
-      <h1>
-        Position: {lat}, {lng}
-      </h1>
-      <button onClick={() => setSearchParams({ lat: 23, lng: 50 })}>
-        Change coordinates
-      </button>
+    <div className={styles.mapContainer}>
+      {!geoLocationPosition && (
+        <Button type="position" onClick={getPosition}>
+          {isLoadingPosition ? "Loading..." : "Get your location"}
+        </Button>
+      )}
+      <MapContainer
+        center={mapPosition}
+        // center={[mapLat, mapLng]}
+        zoom={10}
+        scrollWheelZoom={true}
+        className={styles.mapContainer}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
+        />
+        {cities.map((city) => (
+          <Marker position={city.position} key={city.id}>
+            <Popup>
+              <div>
+                <span>{convertToEmoji(city.emoji)}</span>{" "}
+                <span>{city.cityName}</span>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+        <ChangeCenter position={mapPosition} />
+        <DetectClick />
+      </MapContainer>
     </div>
   );
+}
+
+function ChangeCenter({ position }) {
+  const map = useMap();
+  map.setView(position);
+  return null;
+}
+
+function DetectClick() {
+  const navigate = useNavigate();
+  useMapEvents({
+    click: (e) => {
+      navigate(`form?lat=${e.latlng.lat}&lng=${e.latlng.lng}`);
+    },
+  });
 }
 
 export default Map;
