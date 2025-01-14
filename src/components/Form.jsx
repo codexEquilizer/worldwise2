@@ -12,7 +12,7 @@ import Message from "./Message";
 import Spinner from "./Spinner";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
-import { useCities } from "../context/CitiesContext";
+import { useCities } from "../Context/CitiesContext";
 import { useNavigate } from "react-router-dom";
 
 const BASE_URL = "https://api.bigdatacloud.net/data/reverse-geocode-client";
